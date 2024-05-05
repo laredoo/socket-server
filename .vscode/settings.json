@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "types.h": "c",
+        "stdlib.h": "c",
+        "string.h": "c",
+        "inttypes.h": "c",
+        "common.h": "c",
+        "stdio.h": "c"
+    },
+    // "editor.formatOnSave": true
+}
