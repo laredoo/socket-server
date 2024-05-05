@@ -25,15 +25,13 @@ int main(int argc, char **argv) {
     usage(argc, argv);
   }
 
-  char user_choice[ANWSZ];
-  memset(user_choice, 0, ANWSZ);
-  printf("Escolha uma opção>\n0 - Sair\n1 - Solicitar corrida\n");
-  fgets(user_choice, sizeof(user_choice), stdin);
-
   while(1) {
 
-    printf("User choice: %c\n", user_choice[0]);
-
+    char user_choice[ANWSZ];
+    memset(user_choice, 0, ANWSZ);
+    printf("Escolha uma opção>\n0 - Sair\n1 - Solicitar corrida\n");
+    fgets(user_choice, sizeof(user_choice), stdin);
+    
     if(user_choice[0] == REFUSE)
       break;
 
@@ -51,8 +49,7 @@ int main(int argc, char **argv) {
       }
 
       struct sockaddr *addr = (struct sockaddr *)(&storage);
-      if (0 !=
-          connect(s, addr, sizeof(storage))) { // conecta com o endereço passado
+      if (0 != connect(s, addr, sizeof(storage))) { // conecta com o endereço passado
         logexit("connect");
       }
 
@@ -60,18 +57,24 @@ int main(int argc, char **argv) {
       addrtostr(addr, addrstr, BUFSZ);
       printf("connected to %s\n", addrstr);
 
-      int server_choice = -1;
+      char server_choice[ANWSZ];
+      memset(server_choice, 0, ANWSZ);
+      char server_message[BUFSZ];
+      memset(server_message, 0, BUFSZ);
 
       while(1) {
 
-        size_t bytes_recv = recv(s, &server_choice, sizeof(server_choice), 0);
+        size_t bytes_recv = recv(s, server_choice, sizeof(server_choice), 0); // Consertar esse ponteiro para server choice
+
+        if(server_choice[0] == REFUSE) {
+          bytes_recv = recv(s, server_message, sizeof(server_message), 0); 
+          printf("%s", server_message);
+          close(s);
+          break;
+        }
 
         if(bytes_recv <= 0)
           logexit("Client received 0 bytes or less from server\n");
-        if(server_choice == 0)
-          printf("Não foi encontrado motorista\n");
-          close(s);
-          break;
       }
     }
   }

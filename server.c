@@ -9,8 +9,9 @@
 #include <sys/types.h>
 
 #define BUFSZ 1024
-#define REFUSE 0
-#define ACCEPT 1
+#define ANWSZ 3
+#define REFUSE '0'
+#define ACCEPT '1'
 
 void usage(int argc, char **argv) {
   printf("usage: %s <v4|v6> <server port>\n", argv[0]);
@@ -73,18 +74,41 @@ int main(int argc, char **argv) {
     printf("[LOG] connection from %s\n", caddrstr);
 
     printf("[LOG] Corrida disponível:\n0 - Recusar\n1 - Aceitar\n");
-    char user_option[3];
-    memset(user_option, 0, 3);
-    fgets(user_option, 3, stdin);
-    if (user_option[0] == '0')
-    {
-        close(csock);
-        printf("Aguardando solicitação.\n");
+    char server_choice[ANWSZ];
+    memset(server_choice, 0, ANWSZ);
+    fgets(server_choice, sizeof(server_choice), stdin);
+    size_t total_bytes_sent = 0;
+
+    /* 
+      Aqui envio a escolha do servidor:
+        0 > REFUSE
+        1 > ACCEPT
+    */
+    size_t num_bytes_sent = 0;
+    while(total_bytes_sent < strlen(server_choice)) {
+      num_bytes_sent = send(csock, server_choice, strlen(server_choice), 0); // Envio a escolha do "Uber"
+      if (num_bytes_sent == -1) {
+          logexit("send");
+      }
+      total_bytes_sent += num_bytes_sent;
     }
 
-    size_t num_bytes_sent = send(csock, user_option, strlen(user_option) + 1, 0); // num bytes efetivamente transmitidos na rede
-    if (num_bytes_sent != strlen(user_option) + 1) {
-        logexit("send");
+    if (server_choice[0] == REFUSE)
+    {
+      char fail_msg[BUFSZ] = " Não foi encontrado motorista\n";
+      total_bytes_sent = 0;
+
+      /* Aqui envio a mensagem de falha "Não foi encontrado motorista" */
+      while(total_bytes_sent < strlen(fail_msg)) {
+        num_bytes_sent = send(csock, fail_msg + total_bytes_sent, strlen(fail_msg) - total_bytes_sent, 0); // Envio a mensagem "Não foi encontrado motorista"
+        if (num_bytes_sent == -1) {
+            logexit("send");
+        }
+        total_bytes_sent += num_bytes_sent;
+      }
+
+      close(csock); // Fecho a conexão com o socket do cliente
+      printf("Aguardando solicitação.\n");
     }
   }
   exit(EXIT_SUCCESS);
