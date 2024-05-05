@@ -9,6 +9,8 @@
 #include <sys/types.h>
 
 #define BUFSZ 1024
+#define REFUSE 0
+#define ACCEPT 1
 
 void usage(int argc, char **argv) {
   printf("usage: %s <v4|v6> <server port>\n", argv[0]);
@@ -34,8 +36,11 @@ int main(int argc, char **argv) {
   }
 
   int enable = 1;
-  if (0 != setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int))) {
-    logexit("setsockopt");
+  if (0 !=
+      setsockopt(
+          s, SOL_SOCKET, SO_REUSEADDR, &enable,
+          sizeof(int))) {  // possibilita reutilizar o mesmo endereço de socket
+    logexit("setsockopt"); // utilize enable = 0 para desabilitar essa opção
   }
 
   struct sockaddr *addr = (struct sockaddr *)(&storage);
@@ -50,16 +55,15 @@ int main(int argc, char **argv) {
 
   char addrstr[BUFSZ];
   addrtostr(addr, addrstr, BUFSZ);
-  printf("bound to %s, waiting connections\n", addrstr);
+  // printf("bound to %s, waiting connections\n", addrstr);
+  printf("Aguardando solicitação\n");
 
   while (1) {
-
     struct sockaddr_storage cstorage;
     struct sockaddr *caddr = (struct sockaddr *)(&cstorage);
     socklen_t caddrlen = sizeof(cstorage);
 
     int csock = accept(s, caddr, &caddrlen);
-
     if (csock == -1) {
       logexit("accept");
     }
@@ -68,18 +72,20 @@ int main(int argc, char **argv) {
     addrtostr(caddr, caddrstr, BUFSZ);
     printf("[LOG] connection from %s\n", caddrstr);
 
-    char buf[BUFSZ];
-    memset(buf, 0, BUFSZ);
-    size_t count = recv(csock, buf, BUFSZ, 0);
-    printf("[msg] %s, %d bytes: %s\n", caddrstr, (int)count, buf);
-
-    sprintf(buf, "remote endpoint: %.1000s\n", caddrstr);
-    count = send(csock, buf, strlen(buf) + 1, 0);
-    if (count != strlen(buf) + 1) {
-      logexit("send");
+    printf("[LOG] Corrida disponível:\n0 - Recusar\n1 - Aceitar\n");
+    char user_option[3];
+    memset(user_option, 0, 3);
+    fgets(user_option, 3, stdin);
+    if (user_option[0] == '0')
+    {
+        close(csock);
+        printf("Aguardando solicitação.\n");
     }
-    close(csock);
-  }
 
+    size_t num_bytes_sent = send(csock, user_option, strlen(user_option) + 1, 0); // num bytes efetivamente transmitidos na rede
+    if (num_bytes_sent != strlen(user_option) + 1) {
+        logexit("send");
+    }
+  }
   exit(EXIT_SUCCESS);
 }

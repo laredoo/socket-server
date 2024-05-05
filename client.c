@@ -5,11 +5,14 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <arpa/inet.h>
 
 #define BUFSZ 1024
+#define ANWSZ 3
+#define REFUSE '0'
+#define ACCEPT '1'
 
 void usage(int argc, char **argv) {
   printf("usage: %s <server IP> <server port>\n", argv[0]);
@@ -17,60 +20,59 @@ void usage(int argc, char **argv) {
   exit(EXIT_FAILURE);
 }
 
-
 int main(int argc, char **argv) {
   if (argc < 3) {
     usage(argc, argv);
   }
 
+  char user_choice[ANWSZ];
+  memset(user_choice, 0, ANWSZ);
+  printf("Escolha uma opção>\n0 - Sair\n1 - Solicitar corrida\n");
+  fgets(user_choice, sizeof(user_choice), stdin);
 
-  struct sockaddr_storage storage;
-  if (0 != addrparse(argv[1], argv[2], &storage)) {
-    usage(argc, argv);
-  }
+  while(1) {
 
-  int s;
-  s = socket(storage.ss_family, SOCK_STREAM, 0);
-  if (s == -1) {
-    logexit("socket");
-  }
+    printf("User choice: %c\n", user_choice[0]);
 
-  struct sockaddr *addr = (struct sockaddr *)(&storage);
-  if (0 != connect(s, addr, sizeof(storage))) {
-    logexit("connect");
-  }
-
-  char addrstr[BUFSZ];
-  addrtostr(addr, addrstr, BUFSZ);
-
-  printf("connected to %s\n", addrstr);
-
-  char buf[BUFSZ];
-  memset(buf, 0, BUFSZ);
-  printf("mensagem> ");
-  fgets(buf, BUFSZ - 1, stdin);
-  size_t count = send(s, buf, strlen(buf) + 1,
-                   0); // num bytes efetivamente transmitidos na rede
-  if (count != strlen(buf) + 1) {
-    logexit("send");
-  }
-
-  memset(buf, 0, BUFSZ);
-  unsigned total = 0; // total de bytes recebidos até o momento
-  while (1) {
-    count = recv(s, buf + total, BUFSZ - total,
-                 0); // recebe a resposta do sv e coloco total bytes para frente
-    if (count == 0) {
-      // Conexão terminada. Apenas recebemos 0 bytes do servidor se não tiver
-      // mais conexão
+    if(user_choice[0] == REFUSE)
       break;
+
+    if(user_choice[0] == ACCEPT) {
+    
+      struct sockaddr_storage storage;
+      if (0 != addrparse(argv[1], argv[2], &storage)) {
+        usage(argc, argv);
+      }
+
+      int s;
+      s = socket(storage.ss_family, SOCK_STREAM, 0);
+      if (s == -1) {
+        logexit("socket");
+      }
+
+      struct sockaddr *addr = (struct sockaddr *)(&storage);
+      if (0 !=
+          connect(s, addr, sizeof(storage))) { // conecta com o endereço passado
+        logexit("connect");
+      }
+
+      char addrstr[BUFSZ];
+      addrtostr(addr, addrstr, BUFSZ);
+      printf("connected to %s\n", addrstr);
+
+      int server_choice = -1;
+
+      while(1) {
+
+        size_t bytes_recv = recv(s, &server_choice, sizeof(server_choice), 0);
+
+        if(bytes_recv <= 0)
+          logexit("Client received 0 bytes or less from server\n");
+        if(server_choice == 0)
+          printf("Não foi encontrado motorista\n");
+          close(s);
+          break;
+      }
     }
-    total += count;
   }
-  close(s);
-
-  printf("received %u bytes\n", total);
-  puts(buf);
-
-  exit(EXIT_SUCCESS);
 }

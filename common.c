@@ -47,6 +47,7 @@ int addrparse(const char *addrstr, const char *portstr,
   return -1;
 }
 
+/* Convert socket byte address to human friendly readable format  */
 void addrtostr(const struct sockaddr *addr, char *str, size_t strsize) {
 
   int version;
