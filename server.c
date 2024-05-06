@@ -137,11 +137,11 @@ int main(int argc, char **argv) {
         memset(server_msg, 0, BUFSZ);
         sleep(2); // espera 2 segundos
       }
-    }
 
-    printf("O motorista chegou!\n");
-    close(csock);
-    printf("Aguardando solicitação.\n");
+      printf("O motorista chegou!\n");
+      close(csock);
+      printf("Aguardando solicitação.\n");
+    }
   }
   exit(EXIT_SUCCESS);
 }

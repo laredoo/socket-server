@@ -99,7 +99,6 @@ int main(int argc, char **argv) {
             }
             printf("%s\n", general_buffer);
           }
-
           close(s);
         }
         break;
