@@ -16,7 +16,8 @@
         "type_traits": "c",
         "utility": "c",
         "inet.h": "c",
-        "math.h": "c"
+        "math.h": "c",
+        "cstdlib": "c"
     },
     // "editor.formatOnSave": true
 }

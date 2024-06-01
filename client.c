@@ -29,8 +29,8 @@ int main(int argc, char **argv) {
     fgets(INPUT, sizeof(INPUT), stdin);
     char user_choice = INPUT[0];
 
-    if(user_choice != SENHOR_DOS_ANEIS && user_choice != PODEROSO_CHEFAO && user_choice != CLUBE_DA_LUTA) {
-      printf("Por favor escolha um filme válido.");
+    if(user_choice != REFUSE && user_choice != SENHOR_DOS_ANEIS && user_choice != PODEROSO_CHEFAO && user_choice != CLUBE_DA_LUTA) {
+      printf("Por favor escolha um filme válido.\n");
       exit(EXIT_FAILURE);
     }
 
