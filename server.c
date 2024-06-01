@@ -80,10 +80,10 @@ void *client_thread(void *data) {
 void *monitor_thread(void *arg) {
   // Thread que monitora e imprime a quantidade de clientes conectados a cada 4 segundos
   while (1) {
-    sleep(4); // Aguarda 4 segundos
     pthread_mutex_lock(&count_mutex); // Trava o mutex
     printf("Clientes conectados: %d\n", client_count); // Imprime a quantidade de clientes conectados
     pthread_mutex_unlock(&count_mutex); // Destrava o mutex
+    sleep(4); // Aguarda 4 segundos
   }
   pthread_exit(NULL);
 }
@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
       client_count += 1;
       pthread_mutex_unlock(&count_mutex); // Destrava o mutex
       char movie_id = USER_CHOICE[0]; // Obtém o ID do filme escolhido pelo cliente
-      printf("Filme escolhido pelo cliente: %c\n", movie_id);
+      // printf("Filme escolhido pelo cliente: %c\n", movie_id);
       struct client_data *cdata = malloc(sizeof(*cdata)); // Aloca memória para os dados do cliente
       if (!cdata) {
         logexit("malloc");
