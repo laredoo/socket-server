@@ -22,69 +22,82 @@ int main(int argc, char **argv) {
 
   while (1) {
 
-    char user_choice[ANWSZ];
-    memset(user_choice, 0, ANWSZ);
-    printf("Escolha uma opção>\n0 - Sair\n1 - Solicitar corrida\n");
-    fgets(user_choice, sizeof(user_choice), stdin);
+    char INPUT[ANWSZ];
+    memset(INPUT, 0, ANWSZ);
+    printf("Escolha uma opção>\n0 - Sair\n1 - Senhor dos aneis\n2 - O poderoso "
+           "Chefão\n3 - Clube da Luta\n");
+    fgets(INPUT, sizeof(INPUT), stdin);
+    char user_choice = INPUT[0];
 
-    if (user_choice[0] == REFUSE)
+    if(user_choice != SENHOR_DOS_ANEIS && user_choice != PODEROSO_CHEFAO && user_choice != CLUBE_DA_LUTA) {
+      printf("Por favor escolha um filme válido.");
+      exit(EXIT_FAILURE);
+    }
+
+    if (user_choice == REFUSE)
       break;
-
-    if (user_choice[0] == ACCEPT) {
-
-      struct sockaddr_storage storage; // Declara uma estrutura de armazenamento de endereço genérica.
-      // Se ocorrer um erro na conversão, chama a função de uso para mostrar como usar o programa e sai.
-      // Converte os argumentos passados (endereço IP e porta) em uma estrutura de endereço.
+    else {
+      struct sockaddr_storage storage; // Declara uma estrutura de armazenamento
+                                       // de endereço genérica.
+      // Se ocorrer um erro na conversão, chama a função de uso para mostrar
+      // como usar o programa e sai. Converte os argumentos passados (endereço
+      // IP e porta) em uma estrutura de endereço.
       if (0 != addrparse(argv[2], argv[3], &storage)) {
         usage(argc, argv);
       }
 
-      // Cria um novo socket usando o tipo de família de protocolos e tipo de socket fornecidos.
+      // Cria um novo socket usando o tipo de família de protocolos e tipo de
+      // socket fornecidos.
       int s;
       s = socket(storage.ss_family, SOCK_DGRAM, 0);
       if (s == -1) {
         logexit("socket");
       }
 
-      // Converte a estrutura de armazenamento de endereço em uma estrutura de endereço genérica.
+      // Converte a estrutura de armazenamento de endereço em uma estrutura de
+      // endereço genérica.
       struct sockaddr *addr = (struct sockaddr *)(&storage);
 
-      // Converte o endereço do servidor em uma string legível por humanos e imprime uma mensagem indicando que a conexão foi estabelecida.
+      // Converte o endereço do servidor em uma string legível por humanos e
+      // imprime uma mensagem indicando que a conexão foi estabelecida.
       char addrstr[BUFSZ];
       addrtostr(addr, addrstr, BUFSZ);
-      printf("connected to %s\n", addrstr);
+      // printf("connected to %s\n", addrstr);
 
       while (1) {
-        // Converte a estrutura de armazenamento de endereço em uma estrutura de endereço genérica.
+        // Converte a estrutura de armazenamento de endereço em uma estrutura de
+        // endereço genérica.
         struct sockaddr *caddr = (struct sockaddr *)(&storage);
 
         // Declara um buffer para uso geral.
         char general_buffer[BUFSZ];
-        strcpy(general_buffer, "Hi from the client bruh. Cench here. Alright.\n");
+        memset(general_buffer, 0, BUFSZ);
 
-        printf("Message sent: %s\n", general_buffer);
+        printf("\nFilme Escolhido: %s\n", INPUT);
 
         socklen_t addrlen = sizeof(storage);
 
-        sendto(s, general_buffer, strlen(general_buffer)+1, 0, (struct sockaddr *)&storage, addrlen);
-        memset(general_buffer, 0, BUFSZ);
-
-        int bytes_recv = recvfrom(s, general_buffer, BUFSZ, 0, caddr, &addrlen);
-        if(bytes_recv < 0) {
-          logexit("recvfrom");
+        sendto(s, INPUT, strlen(INPUT) + 1, 0,
+               (struct sockaddr *)&storage, addrlen);
+        memset(INPUT, 0, ANWSZ);
+        for(int i = 0; i < 5; i++) {
+          int bytes_recv = recvfrom(s, general_buffer, BUFSZ, 0, caddr, &addrlen);
+          if (bytes_recv < 0) {
+            logexit("recvfrom");
+          } else {
+            printf("%s", general_buffer);
+          }
+          memset(general_buffer, 0, BUFSZ);
+          printf("\n");
         }
-        else {
-          printf("Número de bytes recebidos: %d\n", bytes_recv);
-          printf("Recebido do cliente: %s", general_buffer);
-        }
 
+        printf("\n");
         close(s);
-        
         break;
       }
     }
   }
-  
+
   printf("<Encerrar Programa>\n");
   exit(EXIT_SUCCESS);
 }

@@ -15,7 +15,8 @@
         "tuple": "c",
         "type_traits": "c",
         "utility": "c",
-        "inet.h": "c"
+        "inet.h": "c",
+        "math.h": "c"
     },
     // "editor.formatOnSave": true
 }

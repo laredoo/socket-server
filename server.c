@@ -41,6 +41,34 @@ void *client_thread(void *data) {
   pthread_exit(EXIT_SUCCESS);
 }
 
+void send_message(int movie_id, int message_id, int s, struct sockaddr_storage cstorage, socklen_t caddrlen) {
+
+
+  
+  
+  int line_id = (movie_id == 1) ? message_id : (movie_id - 1) * message_id + 5;
+
+  FILE *arquivo;
+  arquivo = fopen("../frases.txt", "r");
+  if (arquivo == NULL) {
+      printf("Erro ao abrir o arquivo.");
+      logexit("File is null");
+  }
+  int counter = 0;
+  char linha[100];
+
+  while (fgets(linha, sizeof(linha), arquivo) != NULL){
+    if(counter == line_id)
+      break;
+    counter++;
+  }
+
+  //printf("%s", linha);
+  sendto(s, linha, strlen(linha)+1, 0, (struct sockaddr *)&cstorage, caddrlen);
+
+}
+
+
 int main(int argc, char **argv) {
 
   if (argc < 3) {
@@ -96,19 +124,29 @@ int main(int argc, char **argv) {
         sizeof(cstorage); // Declara uma variável para armazenar o tamanho da
                           // estrutura de endereço do cliente.
 
+    char USER_CHOICE[ANWSZ];
     char msg[BUFSZ];
+    memset(USER_CHOICE, 0, ANWSZ);
     memset(msg, 0, BUFSZ);
-    int bytes_recv = recvfrom(s, msg, BUFSZ, 0, caddr, &caddrlen);
+    int bytes_recv = recvfrom(s, USER_CHOICE, ANWSZ, 0, caddr, &caddrlen);
     if(bytes_recv < 0) {
       logexit("recvfrom");
     }
-    printf("Número de bytes recebidos: %d\n", bytes_recv);
-    printf("Recebido do cliente: %s", msg);
-    
-    strcpy(msg, "Message received, Cench.\n");
-    printf("Mensagem enviada: %s", msg);
-    sendto(s, msg, strlen(msg)+1, 0, (struct sockaddr *)&cstorage, caddrlen);
+    char movie_id = USER_CHOICE[0];
 
+    printf("Número de bytes recebidos: %d\n", bytes_recv);
+    printf("Recebido do cliente: %c", movie_id);
+    
+    for(int i=0; i < 5; i++) {
+      // strcpy(msg, "Message received, Cench.\n");
+      // printf("Mensagem enviada: %s", msg);
+      // sendto(s, msg, strlen(msg)+1, 0, (struct sockaddr *)&cstorage, caddrlen);
+      send_message(atoi(&movie_id), i, s, cstorage, caddrlen);
+      sleep(3);
+    }
+
+    printf("\n");
+    
     // pthread_t tid;
     // pthread_create(&tid, NULL, client_thread, cdata);
     // pthread_detach(tid);
@@ -117,4 +155,5 @@ int main(int argc, char **argv) {
   close(s);
   exit(EXIT_SUCCESS);
 }
+
 

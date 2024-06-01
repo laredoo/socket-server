@@ -8,7 +8,9 @@
 #define BUFSZ 1024
 #define ANWSZ 3
 #define REFUSE '0'
-#define ACCEPT '1'
+#define SENHOR_DOS_ANEIS '1'
+#define PODEROSO_CHEFAO '2'
+#define CLUBE_DA_LUTA '3'
 
 typedef struct {
   double latitude;
