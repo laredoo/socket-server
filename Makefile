@@ -5,3 +5,4 @@ all:
 
 clean:
 	@rm -f common.o client.o bin/client bin/server
+	
