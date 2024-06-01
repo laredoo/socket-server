@@ -77,22 +77,24 @@ int main(int argc, char **argv) {
 
         socklen_t addrlen = sizeof(storage);
 
+        // Envia a escolha do usuário para o servidor
         sendto(s, INPUT, strlen(INPUT) + 1, 0,
                (struct sockaddr *)&storage, addrlen);
         memset(INPUT, 0, ANWSZ);
         for(int i = 0; i < 5; i++) {
+          // Recebe a resposta do servidor
           int bytes_recv = recvfrom(s, general_buffer, BUFSZ, 0, caddr, &addrlen);
           if (bytes_recv < 0) {
             logexit("recvfrom");
           } else {
-            printf("%s", general_buffer);
+            printf("%s", general_buffer); // Imprime a resposta recebida do servidor
           }
-          memset(general_buffer, 0, BUFSZ);
+          memset(general_buffer, 0, BUFSZ); // Limpa o buffer general_buffer
           printf("\n");
         }
 
         printf("\n");
-        close(s);
+        close(s); // Fecha o socket
         break;
       }
     }
